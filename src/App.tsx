@@ -32,6 +32,7 @@ export default function App() {
   const [initialDescription, setInitialDescription] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<BriefAnswer[]>([]);
+  const [mascotNudgeHasShown, setMascotNudgeHasShown] = useState(false);
   const [sharedBrief, setSharedBrief] = useState<SharedBriefState>(() => parseSharedBrief());
 
   const currentQuestion = questions[questionIndex];
@@ -81,6 +82,7 @@ export default function App() {
     setInitialDescription('');
     setQuestionIndex(0);
     setAnswers([]);
+    setMascotNudgeHasShown(false);
   };
 
   const createBriefFromSharedScreen = () => {
@@ -126,6 +128,8 @@ export default function App() {
       questionIndex={questionIndex}
       totalQuestions={questions.length}
       existingAnswer={answers.find((answer) => answer.questionId === currentQuestion.id)}
+      showMascotNudge={questionIndex === 7 && !mascotNudgeHasShown}
+      onMascotNudgeDismiss={() => setMascotNudgeHasShown(true)}
       onBack={goBack}
       onSkip={skipQuestion}
       onAnswer={saveAnswer}

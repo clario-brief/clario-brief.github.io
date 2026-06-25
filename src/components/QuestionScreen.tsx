@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AnswerKind, BriefAnswer, Question, QuestionOption } from '../types';
 import { Icon } from './Icon';
+import { MascotNudge } from './MascotNudge';
 import { OptionButton } from './OptionButton';
 import { ProgressBar } from './ProgressBar';
 
@@ -9,6 +10,8 @@ type QuestionScreenProps = {
   questionIndex: number;
   totalQuestions: number;
   existingAnswer?: BriefAnswer;
+  showMascotNudge: boolean;
+  onMascotNudgeDismiss: () => void;
   onBack: () => void;
   onSkip: () => void;
   onAnswer: (answer: BriefAnswer) => void;
@@ -94,6 +97,8 @@ export function QuestionScreen({
   questionIndex,
   totalQuestions,
   existingAnswer,
+  showMascotNudge,
+  onMascotNudgeDismiss,
   onBack,
   onSkip,
   onAnswer,
@@ -118,8 +123,27 @@ export function QuestionScreen({
     (selectedOptions.length > 0 &&
       (!selectedNeedsCustom || selectedTextOptions.every((option) => customValues[option.id]?.trim().length > 0)));
 
+  useEffect(() => {
+    if (!showMascotNudge) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      onMascotNudgeDismiss();
+    }, 4500);
+
+    return () => window.clearTimeout(timerId);
+  }, [onMascotNudgeDismiss, showMascotNudge]);
+
+  const dismissMascotNudge = () => {
+    if (showMascotNudge) {
+      onMascotNudgeDismiss();
+    }
+  };
+
   const handleSelect = (option: QuestionOption) => {
     const wasSelected = selectedIds.includes(option.id);
+    dismissMascotNudge();
 
     setSelectedIds((currentIds) => {
       const isSelected = currentIds.includes(option.id);
@@ -169,6 +193,8 @@ export function QuestionScreen({
   };
 
   const handleSubmit = () => {
+    dismissMascotNudge();
+
     if (question.type === 'text' && selectedOptions.length === 0) {
       onAnswer({
         questionId: question.id,
@@ -206,6 +232,16 @@ export function QuestionScreen({
       kind,
       value: question.type === 'multiple' ? values : values[0],
     });
+  };
+
+  const handleBack = () => {
+    dismissMascotNudge();
+    onBack();
+  };
+
+  const handleSkip = () => {
+    dismissMascotNudge();
+    onSkip();
   };
 
   return (
@@ -259,15 +295,17 @@ export function QuestionScreen({
             </label>
           ))}
         </div>
+
+        {showMascotNudge && <MascotNudge />}
       </section>
 
       <nav className="question-actions" aria-label="Навигация по вопросам">
-        <button className="ghost-button" type="button" onClick={onBack}>
+        <button className="ghost-button" type="button" onClick={handleBack}>
           <Icon name="arrow-left" />
           Назад
         </button>
         <div>
-          <button className="skip-button" type="button" onClick={onSkip}>
+          <button className="skip-button" type="button" onClick={handleSkip}>
             Пропустить
           </button>
           <button className="primary-button" type="button" onClick={handleSubmit} disabled={!canContinue}>
