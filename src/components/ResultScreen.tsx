@@ -25,17 +25,16 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
     link.download = 'clario-brief.txt';
     link.click();
     URL.revokeObjectURL(url);
+    setFeedback('Файл скачан — можно открыть и поправить вручную');
   };
 
-  const handleOpenTelegram = async () => {
+  const handleCopyBrief = async () => {
     try {
       await navigator.clipboard.writeText(brief.text);
-      setFeedback('ТЗ скопировано — вставьте его в Telegram.');
+      setFeedback('ТЗ скопировано');
     } catch {
       setFeedback('Не удалось скопировать автоматически. Скопируйте ТЗ вручную.');
     }
-
-    window.open('https://web.telegram.org/', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -53,17 +52,20 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
         <pre>{brief.text}</pre>
       </section>
 
-      <section className="result-export" aria-label="Экспорт ТЗ">
-        <p>ТЗ скачается в .txt — его можно открыть и поправить вручную.</p>
+      <section className="result-export" aria-label="Действия с готовым ТЗ">
+        <div className="result-export__copy">
+          <h2>Заберите готовое ТЗ удобным способом.</h2>
+          <p>Скопируйте текст сразу или скачайте .txt, если хотите вручную его поправить.</p>
+        </div>
         <div className="result-export__actions">
-          <button className="primary-button" type="button" onClick={handleDownload}>
-            <Icon name="download" />
-            Скачать
+          <button className="primary-button" type="button" onClick={handleCopyBrief}>
+            <Icon name="copy" />
+            Скопировать ТЗ
           </button>
 
-          <button className="ghost-button telegram-button" type="button" onClick={handleOpenTelegram} aria-label="Открыть Telegram">
-            <Icon name="telegram" />
-            В Telegram
+          <button className="ghost-button" type="button" onClick={handleDownload}>
+            <Icon name="download" />
+            Скачать .txt
           </button>
 
           <button className="ghost-button ghost-button--quiet" type="button" onClick={onRestart}>
