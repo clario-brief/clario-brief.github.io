@@ -72,6 +72,13 @@ button:disabled {
   line-height: 1;
 }
 
+.icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
 .screen {
   width: min(1180px, 100%);
   margin: 0 auto;
@@ -475,7 +482,7 @@ button:disabled {
 }
 
 .telegram-button .icon {
-  color: var(--color-lime);
+  color: #229ed9;
 }
 
 .ghost-button--quiet {

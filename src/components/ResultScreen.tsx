@@ -10,8 +10,6 @@ type ResultScreenProps = {
   onRestart: () => void;
 };
 
-const TELEGRAM_SHARE_TEXT = 'Готовое ТЗ из Clario. Текст скопирован — вставьте его в чат.';
-
 export function ResultScreen({ initialDescription, answers, onRestart }: ResultScreenProps) {
   const [feedback, setFeedback] = useState('');
   const brief = useMemo(
@@ -37,11 +35,7 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
       setFeedback('Не удалось скопировать автоматически. Скопируйте ТЗ вручную.');
     }
 
-    window.open(
-      `https://t.me/share/url?text=${encodeURIComponent(TELEGRAM_SHARE_TEXT)}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
+    window.open('https://web.telegram.org/', '_blank', 'noopener,noreferrer');
   };
 
   return (
