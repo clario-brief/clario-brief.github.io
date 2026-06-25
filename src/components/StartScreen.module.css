@@ -38,19 +38,6 @@
   letter-spacing: -0.025em;
 }
 
-.badge {
-  width: fit-content;
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 11px;
-  color: var(--color-lime);
-  background: var(--color-ink);
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1;
-}
-
 .main {
   flex: 1;
   display: grid;

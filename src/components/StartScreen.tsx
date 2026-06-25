@@ -99,7 +99,6 @@ export function StartScreen({ value, onChange, onStart }: StartScreenProps) {
     <main className={styles.screen}>
       <header className={styles.header}>
         <div className={styles.logo}>Clario</div>
-        <div className={styles.badge}>MVP · визуальные проекты</div>
       </header>
 
       <div className={styles.main}>
