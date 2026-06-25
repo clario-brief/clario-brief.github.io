@@ -242,7 +242,7 @@ button:disabled {
   gap: 14px;
   text-align: left;
   color: var(--color-ink);
-  background: var(--color-surface-soft);
+  background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: 20px;
   padding: 15px 16px;
@@ -261,9 +261,15 @@ button:disabled {
 }
 
 .option-button:hover {
-  background: var(--color-surface);
+  background: var(--color-surface-hover);
   border-color: var(--color-line-strong);
   transform: translateY(-1px);
+}
+
+.option-button:focus-visible {
+  outline: none;
+  border-color: var(--color-line-strong);
+  box-shadow: var(--shadow-focus);
 }
 
 .option-button:active {
@@ -271,18 +277,25 @@ button:disabled {
 }
 
 .option-button--selected {
-  color: var(--color-lime);
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  box-shadow: 0 14px 30px rgba(11, 12, 10, 0.16);
+  color: var(--color-ink);
+  background: var(--color-lime-pale);
+  border-color: #c9d7a7;
+  box-shadow: 0 0 0 2px rgba(191, 255, 0, 0.16);
+  font-weight: 750;
+}
+
+.option-button--selected:hover {
+  background: #f3f8e3;
+  border-color: #b9ca91;
+  box-shadow: 0 0 0 2px rgba(191, 255, 0, 0.2);
 }
 
 .option-button--selected .icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
-  color: var(--color-ink);
-  background: var(--color-lime);
+  color: var(--color-lime);
+  background: var(--color-ink);
   font-size: 13px;
   font-weight: 800;
 }
