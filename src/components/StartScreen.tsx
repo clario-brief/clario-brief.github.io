@@ -106,7 +106,7 @@ export function StartScreen({ value, onChange, onStart }: StartScreenProps) {
           <p className={styles.kicker}>Conversational design tool</p>
           <h1>
             Превращаем «сделайте красиво»
-            <br />в понятное ТЗ
+            <br />в <span className={styles.heroHighlight}>понятное ТЗ</span>
           </h1>
           <p className={styles.lead}>
             Опиши задачу своими словами. Clario задаст короткие уточняющие вопросы и соберёт

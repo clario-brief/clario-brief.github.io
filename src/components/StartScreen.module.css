@@ -75,6 +75,22 @@
   font-weight: 800;
 }
 
+.heroHighlight {
+  position: relative;
+  display: inline-block;
+}
+
+.heroHighlight::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  bottom: -10px;
+  width: 78%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-lime);
+}
+
 .lead {
   max-width: 560px;
   margin: 22px 0 0;
