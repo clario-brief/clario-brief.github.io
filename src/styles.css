@@ -88,6 +88,8 @@ button:disabled {
 .progress {
   display: grid;
   gap: 12px;
+  position: relative;
+  z-index: 5;
 }
 
 .progress__top {
@@ -113,7 +115,6 @@ button:disabled {
   gap: 12px;
 }
 
-.progress__track,
 .status-meter {
   height: 7px;
   overflow: hidden;
@@ -121,7 +122,6 @@ button:disabled {
   border-radius: 999px;
 }
 
-.progress__fill,
 .status-meter div {
   height: 100%;
   background: var(--color-lime);
@@ -129,10 +129,198 @@ button:disabled {
   transition: width 240ms ease;
 }
 
-.question-layout {
+.progress__segments {
+  position: relative;
+  display: flex;
+  gap: 7px;
+  overflow: visible;
+}
+
+.progress__segment {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 0;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.progress__segment-mark {
+  width: 100%;
+  height: 7px;
+  display: block;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(11, 12, 10, 0.09);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    height 160ms ease,
+    transform 160ms ease;
+}
+
+.progress__segment:hover .progress__segment-mark {
+  background: var(--color-surface-hover);
+  border-color: var(--color-line-strong);
+  transform: translateY(-1px);
+}
+
+.progress__segment:focus-visible {
+  outline: none;
+}
+
+.progress__segment:focus-visible .progress__segment-mark {
+  box-shadow: var(--shadow-focus);
+}
+
+.progress__segment--answered .progress__segment-mark {
+  background: var(--color-lime);
+  border-color: var(--color-lime);
+}
+
+.progress__segment--skipped .progress__segment-mark {
+  background: transparent;
+  border-color: var(--color-line-strong);
+  border-style: dashed;
+}
+
+.progress__segment--empty .progress__segment-mark {
+  background: var(--color-surface);
+  border-color: var(--color-line-strong);
+}
+
+.progress__segment--future .progress__segment-mark {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(196, 205, 184, 0.72);
+}
+
+.progress__segment--current .progress__segment-mark {
+  height: 11px;
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  box-shadow:
+    0 0 0 3px var(--color-surface),
+    0 0 0 5px rgba(191, 255, 0, 0.45);
+}
+
+.progress__tooltip {
+  width: max-content;
+  max-width: min(330px, calc(100vw - 48px));
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 12px);
+  z-index: 30;
+  display: grid;
+  gap: 5px;
+  padding: 12px 13px;
+  color: var(--color-text);
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-soft);
+  opacity: 0;
+  pointer-events: none;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  transform: translateX(-50%) translateY(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.progress__tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-line);
+  border-top: 1px solid var(--color-line);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.progress__segment:hover .progress__tooltip,
+.progress__segment:focus-visible .progress__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.progress__segment--tooltip-start .progress__tooltip {
+  left: 0;
+  transform: translateY(-4px);
+}
+
+.progress__segment--tooltip-start:hover .progress__tooltip,
+.progress__segment--tooltip-start:focus-visible .progress__tooltip {
+  transform: translateY(0);
+}
+
+.progress__segment--tooltip-start .progress__tooltip::after {
+  left: 18px;
+}
+
+.progress__segment--tooltip-end .progress__tooltip {
+  right: 0;
+  left: auto;
+  transform: translateY(-4px);
+}
+
+.progress__segment--tooltip-end:hover .progress__tooltip,
+.progress__segment--tooltip-end:focus-visible .progress__tooltip {
+  transform: translateY(0);
+}
+
+.progress__segment--tooltip-end .progress__tooltip::after {
+  right: 18px;
+  left: auto;
+  transform: rotate(45deg);
+}
+
+.progress__tooltip-kicker {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.progress__tooltip-title {
+  color: var(--color-ink);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.progress__tooltip-status {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.question-shell {
   width: min(860px, 100%);
   margin: 34px auto 0;
+  position: relative;
+  transition: padding-bottom 220ms ease;
+}
+
+.question-shell--with-nudge {
+  padding-bottom: 98px;
+}
+
+.question-layout {
+  width: 100%;
+  margin: 0;
   padding: 30px;
+  overflow: visible;
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: 28px;
@@ -508,6 +696,49 @@ button:disabled {
     padding: 18px 14px;
   }
 
+  .progress {
+    gap: 10px;
+  }
+
+  .progress__top {
+    align-items: flex-start;
+  }
+
+  .progress__meta {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .progress__segments {
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 0;
+    scrollbar-width: none;
+  }
+
+  .progress__segments::-webkit-scrollbar {
+    display: none;
+  }
+
+  .progress__segment {
+    min-width: 24px;
+    height: 30px;
+  }
+
+  .progress__segment-mark {
+    height: 12px;
+  }
+
+  .progress__segment--current .progress__segment-mark {
+    height: 16px;
+  }
+
+  .progress__tooltip {
+    display: none;
+  }
+
   .result-screen {
     padding: 24px 16px;
   }
@@ -543,8 +774,15 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
-  .question-layout {
+  .question-shell {
     margin-top: 30px;
+  }
+
+  .question-shell--with-nudge {
+    padding-bottom: 116px;
+  }
+
+  .question-layout {
     padding: 22px;
     border-radius: 28px;
   }

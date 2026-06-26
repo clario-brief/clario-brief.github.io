@@ -4,12 +4,13 @@ export type MascotState = 'idle' | 'reading' | 'pause' | 'sleeping';
 
 type ClarioMascotProps = {
   state: MascotState;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
+  expression?: 'neutral' | 'friendly';
 };
 
-export function ClarioMascot({ state, size = 'md' }: ClarioMascotProps) {
+export function ClarioMascot({ state, size = 'md', expression = 'neutral' }: ClarioMascotProps) {
   return (
-    <div className={`${styles.mascot} ${styles[size]} ${styles[state]}`} aria-hidden="true">
+    <div className={`${styles.mascot} ${styles[size]} ${styles[state]} ${styles[expression]}`} aria-hidden="true">
       <div className={styles.head}>
         <span className={styles.tuft} />
         <span className={styles.eye}>

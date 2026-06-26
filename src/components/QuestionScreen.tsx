@@ -11,7 +11,12 @@ type QuestionScreenProps = {
   totalQuestions: number;
   existingAnswer?: BriefAnswer;
   showMascotNudge: boolean;
-  onMascotNudgeDismiss: () => void;
+  questions: Question[];
+  answers: BriefAnswer[];
+  visitedQuestionIndexes: number[];
+  skippedQuestionIds: string[];
+  onMascotNudgeShown: () => void;
+  onQuestionNavigate: (questionIndex: number, currentDraftAnswer?: BriefAnswer) => void;
   onBack: () => void;
   onSkip: () => void;
   onAnswer: (answer: BriefAnswer) => void;
@@ -92,13 +97,20 @@ const getInitialCustomValues = (question: Question, existingAnswer?: BriefAnswer
   }, {});
 };
 
+type MascotNudgeStatus = 'hidden' | 'visible';
+
 export function QuestionScreen({
   question,
   questionIndex,
   totalQuestions,
   existingAnswer,
   showMascotNudge,
-  onMascotNudgeDismiss,
+  questions,
+  answers,
+  visitedQuestionIndexes,
+  skippedQuestionIds,
+  onMascotNudgeShown,
+  onQuestionNavigate,
   onBack,
   onSkip,
   onAnswer,
@@ -112,6 +124,7 @@ export function QuestionScreen({
   const [customValues, setCustomValues] = useState<Record<string, string>>(() =>
     getInitialCustomValues(question, existingAnswer),
   );
+  const [mascotNudgeStatus, setMascotNudgeStatus] = useState<MascotNudgeStatus>('hidden');
 
   const selectedOptions = question.options.filter((option) => selectedIds.includes(option.id));
   const shouldShowTextInput = question.type === 'text' && selectedOptions.length === 0;
@@ -123,27 +136,75 @@ export function QuestionScreen({
     (selectedOptions.length > 0 &&
       (!selectedNeedsCustom || selectedTextOptions.every((option) => customValues[option.id]?.trim().length > 0)));
 
+  const isMascotNudgeMounted = mascotNudgeStatus !== 'hidden';
+
   useEffect(() => {
     if (!showMascotNudge) {
+      setMascotNudgeStatus('hidden');
       return;
     }
 
-    const timerId = window.setTimeout(() => {
-      onMascotNudgeDismiss();
-    }, 4500);
+    const showTimerId = window.setTimeout(() => {
+      setMascotNudgeStatus('visible');
+      onMascotNudgeShown();
+    }, 2000);
 
-    return () => window.clearTimeout(timerId);
-  }, [onMascotNudgeDismiss, showMascotNudge]);
+    return () => {
+      window.clearTimeout(showTimerId);
+    };
+  }, [onMascotNudgeShown, showMascotNudge]);
 
   const dismissMascotNudge = () => {
     if (showMascotNudge) {
-      onMascotNudgeDismiss();
+      setMascotNudgeStatus('hidden');
     }
+  };
+
+  const createCurrentAnswer = (): BriefAnswer | undefined => {
+    if (!canContinue) {
+      return undefined;
+    }
+
+    if (question.type === 'text' && selectedOptions.length === 0) {
+      return {
+        questionId: question.id,
+        questionTitle: question.title,
+        block: question.block,
+        kind: 'text',
+        value: textValue.trim(),
+      };
+    }
+
+    const values = selectedOptions.map((option) => {
+      if (option.opensTextInput) {
+        const customValue = customValues[option.id]?.trim() ?? '';
+
+        return option.kind === 'custom'
+          ? customValue
+          : `${option.label}: ${customValue}`;
+      }
+
+      return option.label;
+    });
+
+    let kind: AnswerKind = 'choice';
+    if (selectedOptions.some((option) => option.kind === 'unknown')) {
+      kind = 'unknown';
+    } else if (selectedOptions.some((option) => option.kind === 'custom')) {
+      kind = 'custom';
+    }
+
+    return {
+      questionId: question.id,
+      questionTitle: question.title,
+      block: question.block,
+      kind,
+      value: question.type === 'multiple' ? values : values[0],
+    };
   };
 
   const handleSelect = (option: QuestionOption) => {
     const wasSelected = selectedIds.includes(option.id);
-    dismissMascotNudge();
 
     setSelectedIds((currentIds) => {
       const isSelected = currentIds.includes(option.id);
@@ -194,44 +255,11 @@ export function QuestionScreen({
 
   const handleSubmit = () => {
     dismissMascotNudge();
+    const answer = createCurrentAnswer();
 
-    if (question.type === 'text' && selectedOptions.length === 0) {
-      onAnswer({
-        questionId: question.id,
-        questionTitle: question.title,
-        block: question.block,
-        kind: 'text',
-        value: textValue.trim(),
-      });
-      return;
+    if (answer) {
+      onAnswer(answer);
     }
-
-    const values = selectedOptions.map((option) => {
-      if (option.opensTextInput) {
-        const customValue = customValues[option.id]?.trim() ?? '';
-
-        return option.kind === 'custom'
-          ? customValue
-          : `${option.label}: ${customValue}`;
-      }
-
-      return option.label;
-    });
-
-    let kind: AnswerKind = 'choice';
-    if (selectedOptions.some((option) => option.kind === 'unknown')) {
-      kind = 'unknown';
-    } else if (selectedOptions.some((option) => option.kind === 'custom')) {
-      kind = 'custom';
-    }
-
-    onAnswer({
-      questionId: question.id,
-      questionTitle: question.title,
-      block: question.block,
-      kind,
-      value: question.type === 'multiple' ? values : values[0],
-    });
   };
 
   const handleBack = () => {
@@ -244,11 +272,29 @@ export function QuestionScreen({
     onSkip();
   };
 
+  const handleQuestionNavigate = (targetIndex: number) => {
+    if (targetIndex === questionIndex) {
+      return;
+    }
+
+    dismissMascotNudge();
+    onQuestionNavigate(targetIndex, createCurrentAnswer());
+  };
+
   return (
     <main className="screen question-screen">
-      <ProgressBar current={questionIndex + 1} total={totalQuestions} />
+      <ProgressBar
+        answers={answers}
+        currentIndex={questionIndex}
+        questions={questions}
+        skippedQuestionIds={skippedQuestionIds}
+        total={totalQuestions}
+        visitedQuestionIndexes={visitedQuestionIndexes}
+        onNavigate={handleQuestionNavigate}
+      />
 
-      <section className="question-layout">
+      <div className={`question-shell ${isMascotNudgeMounted ? 'question-shell--with-nudge' : ''}`}>
+        <section className="question-layout">
         <div className="question-copy">
           <p className="block-label">{question.block}</p>
           <h1>{question.title}</h1>
@@ -296,8 +342,10 @@ export function QuestionScreen({
           ))}
         </div>
 
-        {showMascotNudge && <MascotNudge />}
-      </section>
+        </section>
+
+        {isMascotNudgeMounted && <MascotNudge />}
+      </div>
 
       <nav className="question-actions" aria-label="Навигация по вопросам">
         <button className="ghost-button" type="button" onClick={handleBack}>

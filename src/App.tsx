@@ -32,7 +32,10 @@ export default function App() {
   const [initialDescription, setInitialDescription] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<BriefAnswer[]>([]);
+  const [visitedQuestionIndexes, setVisitedQuestionIndexes] = useState<number[]>([]);
+  const [skippedQuestionIds, setSkippedQuestionIds] = useState<string[]>([]);
   const [mascotNudgeHasShown, setMascotNudgeHasShown] = useState(false);
+  const [mascotNudgeActiveIndex, setMascotNudgeActiveIndex] = useState<number | null>(null);
   const [sharedBrief, setSharedBrief] = useState<SharedBriefState>(() => parseSharedBrief());
 
   const currentQuestion = questions[questionIndex];
@@ -46,6 +49,32 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  useEffect(() => {
+    if (step !== 'questions') {
+      return;
+    }
+
+    setVisitedQuestionIndexes((currentIndexes) =>
+      currentIndexes.includes(questionIndex)
+        ? currentIndexes
+        : [...currentIndexes, questionIndex],
+    );
+  }, [questionIndex, step]);
+
+  useEffect(() => {
+    if (questionIndex !== 7) {
+      setMascotNudgeActiveIndex(null);
+    }
+  }, [questionIndex]);
+
+  const upsertAnswer = (answer: BriefAnswer) => {
+    setAnswers((current) => [
+      ...current.filter((item) => item.questionId !== answer.questionId),
+      answer,
+    ]);
+    setSkippedQuestionIds((current) => current.filter((questionId) => questionId !== answer.questionId));
+  };
+
   const goNext = () => {
     if (questionIndex >= questions.length - 1) {
       setStep('result');
@@ -56,15 +85,15 @@ export default function App() {
   };
 
   const saveAnswer = (answer: BriefAnswer) => {
-    setAnswers((current) => [
-      ...current.filter((item) => item.questionId !== answer.questionId),
-      answer,
-    ]);
+    upsertAnswer(answer);
     goNext();
   };
 
   const skipQuestion = () => {
     setAnswers((current) => current.filter((item) => item.questionId !== currentQuestion.id));
+    setSkippedQuestionIds((current) =>
+      current.includes(currentQuestion.id) ? current : [...current, currentQuestion.id],
+    );
     goNext();
   };
 
@@ -82,7 +111,22 @@ export default function App() {
     setInitialDescription('');
     setQuestionIndex(0);
     setAnswers([]);
+    setVisitedQuestionIndexes([]);
+    setSkippedQuestionIds([]);
     setMascotNudgeHasShown(false);
+    setMascotNudgeActiveIndex(null);
+  };
+
+  const navigateToQuestion = (targetIndex: number, currentDraftAnswer?: BriefAnswer) => {
+    if (targetIndex < 0 || targetIndex >= questions.length) {
+      return;
+    }
+
+    if (currentDraftAnswer) {
+      upsertAnswer(currentDraftAnswer);
+    }
+
+    setQuestionIndex(targetIndex);
   };
 
   const createBriefFromSharedScreen = () => {
@@ -128,8 +172,16 @@ export default function App() {
       questionIndex={questionIndex}
       totalQuestions={questions.length}
       existingAnswer={answers.find((answer) => answer.questionId === currentQuestion.id)}
-      showMascotNudge={questionIndex === 7 && !mascotNudgeHasShown}
-      onMascotNudgeDismiss={() => setMascotNudgeHasShown(true)}
+      showMascotNudge={questionIndex === 7 && (!mascotNudgeHasShown || mascotNudgeActiveIndex === 7)}
+      questions={questions}
+      answers={answers}
+      visitedQuestionIndexes={visitedQuestionIndexes}
+      skippedQuestionIds={skippedQuestionIds}
+      onMascotNudgeShown={() => {
+        setMascotNudgeHasShown(true);
+        setMascotNudgeActiveIndex(7);
+      }}
+      onQuestionNavigate={navigateToQuestion}
       onBack={goBack}
       onSkip={skipQuestion}
       onAnswer={saveAnswer}

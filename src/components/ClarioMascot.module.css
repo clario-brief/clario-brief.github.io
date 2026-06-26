@@ -12,6 +12,11 @@
   height: 52px;
 }
 
+.lg {
+  width: 76px;
+  height: 76px;
+}
+
 .head {
   width: 48px;
   height: 48px;
@@ -85,6 +90,59 @@
   opacity: 0.96;
   transform-origin: center;
   transition: transform 240ms ease, opacity 220ms ease;
+}
+
+.lg .head {
+  width: 66px;
+  height: 66px;
+  border-radius: 22px;
+  box-shadow:
+    inset 0 -12px 22px rgba(0, 0, 0, 0.3),
+    0 14px 28px rgba(11, 12, 10, 0.16);
+}
+
+.lg .tuft {
+  width: 16px;
+  height: 16px;
+  right: 10px;
+  top: 8px;
+}
+
+.lg .eye {
+  width: 13px;
+  height: 13px;
+  top: 22px;
+}
+
+.lg .eye:first-of-type {
+  left: 16px;
+}
+
+.lg .eye:nth-of-type(2) {
+  right: 16px;
+}
+
+.lg .pupil {
+  width: 5px;
+  height: 5px;
+  left: 4px;
+  top: 4px;
+}
+
+.lg .mouth {
+  left: 20px;
+  bottom: 15px;
+  width: 26px;
+}
+
+.friendly .mouth {
+  width: 24px;
+  height: 7px;
+  background: var(--color-lime);
+  border: 0;
+  border-radius: 999px;
+  opacity: 0.98;
+  transform: scaleX(1.06);
 }
 
 .idle .head {
@@ -162,6 +220,10 @@
   animation: sleepRise 2.1s ease-in-out infinite;
 }
 
+.sleepZOne {
+  right: 0;
+}
+
 .sleeping .sleepZTwo {
   right: -6px;
   top: 13px;
@@ -195,6 +257,23 @@
   92%,
   95% {
     height: 3px;
+  }
+}
+
+.lg.idle .eye {
+  animation-name: calmBlinkLarge;
+}
+
+@keyframes calmBlinkLarge {
+  0%,
+  88%,
+  100% {
+    height: 13px;
+  }
+
+  92%,
+  95% {
+    height: 4px;
   }
 }
 
@@ -261,6 +340,11 @@
   .mascot {
     width: 52px;
     height: 52px;
+  }
+
+  .lg {
+    width: 72px;
+    height: 72px;
   }
 
   .head {
