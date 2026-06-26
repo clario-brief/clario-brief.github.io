@@ -4,7 +4,8 @@ import { ResultScreen } from './components/ResultScreen';
 import { StartScreen } from './components/StartScreen';
 import { questions } from './data/questions';
 import type { BriefAnswer } from './types';
-import { trackEvent } from './utils/analytics';
+import { trackEvent, trackPageView } from './utils/analytics';
+import { buildBrief } from './utils/buildBrief';
 
 type AppStep = 'start' | 'questions' | 'result';
 
@@ -29,6 +30,18 @@ export default function App() {
     appOpenedTracked.current = true;
     trackEvent('app_opened');
   }, []);
+
+  useEffect(() => {
+    if (step === 'questions') {
+      trackPageView(`/questions/${questionIndex + 1}`, {
+        screen: step,
+        questionNumber: questionIndex + 1,
+      });
+      return;
+    }
+
+    trackPageView(step === 'result' ? '/result' : '/', { screen: step });
+  }, [questionIndex, step]);
 
   useEffect(() => {
     if (step !== 'questions') {
@@ -78,6 +91,22 @@ export default function App() {
     }
   };
 
+  const trackBriefCompleted = (nextAnswers: BriefAnswer[]) => {
+    const brief = buildBrief({
+      initialDescription,
+      answers: nextAnswers,
+      questions,
+    });
+
+    trackEvent('brief_completed', {
+      totalQuestions: questions.length,
+      answeredQuestions: brief.known.length + brief.unknown.length,
+      skippedQuestions: brief.skipped.length,
+      unknownQuestions: brief.unknown.length,
+      completion: brief.completion,
+    });
+  };
+
   const goNext = () => {
     if (questionIndex >= questions.length - 1) {
       setStep('result');
@@ -91,13 +120,19 @@ export default function App() {
     upsertAnswer(answer);
     trackAnswerEvents(answer);
     if (questionIndex >= questions.length - 1) {
-      trackEvent('brief_completed', { answeredQuestions: answers.length + 1 });
+      const nextAnswers = [
+        ...answers.filter((item) => item.questionId !== answer.questionId),
+        answer,
+      ];
+      trackBriefCompleted(nextAnswers);
     }
     goNext();
   };
 
   const skipQuestion = () => {
-    setAnswers((current) => current.filter((item) => item.questionId !== currentQuestion.id));
+    const nextAnswers = answers.filter((item) => item.questionId !== currentQuestion.id);
+
+    setAnswers(nextAnswers);
     setSkippedQuestionIds((current) =>
       current.includes(currentQuestion.id) ? current : [...current, currentQuestion.id],
     );
@@ -106,7 +141,7 @@ export default function App() {
       questionNumber: questionIndex + 1,
     });
     if (questionIndex >= questions.length - 1) {
-      trackEvent('brief_completed', { answeredQuestions: answers.length });
+      trackBriefCompleted(nextAnswers);
     }
     goNext();
   };
