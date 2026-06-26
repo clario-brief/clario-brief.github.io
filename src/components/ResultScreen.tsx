@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { questions } from '../data/questions';
 import type { BriefAnswer } from '../types';
 import { buildBrief } from '../utils/buildBrief';
+import { trackEvent } from '../utils/analytics';
 import { Icon } from './Icon';
 
 type ResultScreenProps = {
@@ -9,6 +10,17 @@ type ResultScreenProps = {
   answers: BriefAnswer[];
   onRestart: () => void;
 };
+
+const buildExecutorMessage = (briefText: string) =>
+  [
+    'Привет! Я собрала задачу через Clario, чтобы было проще сориентироваться.',
+    '',
+    'Вот бриф:',
+    '',
+    briefText,
+    '',
+    'Если нужно, можно уточнить детали по пунктам, где стоит “не знаю” или “пропущено”.',
+  ].join('\n');
 
 export function ResultScreen({ initialDescription, answers, onRestart }: ResultScreenProps) {
   const [feedback, setFeedback] = useState('');
@@ -25,15 +37,17 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
     link.download = 'clario-brief.txt';
     link.click();
     URL.revokeObjectURL(url);
-    setFeedback('Файл скачан — можно открыть и поправить вручную');
+    trackEvent('brief_downloaded', { completion: brief.completion });
+    setFeedback('Файл скачан. Можно открыть его и вручную поправить формулировки.');
   };
 
   const handleCopyBrief = async () => {
     try {
-      await navigator.clipboard.writeText(brief.text);
-      setFeedback('ТЗ скопировано');
+      await navigator.clipboard.writeText(buildExecutorMessage(brief.text));
+      trackEvent('brief_copied', { completion: brief.completion });
+      setFeedback('Готово. Теперь можно вставить ТЗ в чат, письмо или задачу.');
     } catch {
-      setFeedback('Не удалось скопировать автоматически. Скопируйте ТЗ вручную.');
+      setFeedback('Не удалось скопировать автоматически. Скопируйте текст вручную.');
     }
   };
 
@@ -54,13 +68,14 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
 
       <section className="result-export" aria-label="Действия с готовым ТЗ">
         <div className="result-export__copy">
-          <h2>Заберите готовое ТЗ удобным способом.</h2>
-          <p>Скопируйте текст сразу или скачайте .txt, если хотите вручную его поправить.</p>
+          <h2>Передайте ТЗ исполнителю</h2>
+          <p>Скопируйте готовое сообщение и вставьте его в чат, письмо, Notion или задачу.</p>
+          <p>Скачайте .txt, если хотите открыть файл и вручную поправить формулировки.</p>
         </div>
         <div className="result-export__actions">
           <button className="primary-button" type="button" onClick={handleCopyBrief}>
             <Icon name="copy" />
-            Скопировать ТЗ
+            Скопировать ТЗ для исполнителя
           </button>
 
           <button className="ghost-button" type="button" onClick={handleDownload}>
@@ -70,7 +85,7 @@ export function ResultScreen({ initialDescription, answers, onRestart }: ResultS
 
           <button className="ghost-button ghost-button--quiet" type="button" onClick={onRestart}>
             <Icon name="restart" />
-            Начать заново
+            Начать новый бриф
           </button>
         </div>
         {feedback && <p className="send-hint">{feedback}</p>}

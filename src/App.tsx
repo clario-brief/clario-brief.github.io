@@ -1,31 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QuestionScreen } from './components/QuestionScreen';
 import { ResultScreen } from './components/ResultScreen';
-import { SharedBriefScreen } from './components/SharedBriefScreen';
 import { StartScreen } from './components/StartScreen';
 import { questions } from './data/questions';
 import type { BriefAnswer } from './types';
+import { trackEvent } from './utils/analytics';
 
 type AppStep = 'start' | 'questions' | 'result';
-type SharedBriefState = {
-  text: string;
-  hasError: boolean;
-} | null;
-
-const parseSharedBrief = (): SharedBriefState => {
-  const hash = window.location.hash;
-
-  if (!hash.startsWith('#brief=')) {
-    return null;
-  }
-
-  try {
-    const text = decodeURIComponent(hash.slice('#brief='.length));
-    return text ? { text, hasError: false } : { text: '', hasError: true };
-  } catch {
-    return { text: '', hasError: true };
-  }
-};
 
 export default function App() {
   const [step, setStep] = useState<AppStep>('start');
@@ -36,17 +17,17 @@ export default function App() {
   const [skippedQuestionIds, setSkippedQuestionIds] = useState<string[]>([]);
   const [mascotNudgeHasShown, setMascotNudgeHasShown] = useState(false);
   const [mascotNudgeActiveIndex, setMascotNudgeActiveIndex] = useState<number | null>(null);
-  const [sharedBrief, setSharedBrief] = useState<SharedBriefState>(() => parseSharedBrief());
+  const appOpenedTracked = useRef(false);
 
   const currentQuestion = questions[questionIndex];
 
   useEffect(() => {
-    const handleHashChange = () => {
-      setSharedBrief(parseSharedBrief());
-    };
+    if (appOpenedTracked.current) {
+      return;
+    }
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    appOpenedTracked.current = true;
+    trackEvent('app_opened');
   }, []);
 
   useEffect(() => {
@@ -75,6 +56,28 @@ export default function App() {
     setSkippedQuestionIds((current) => current.filter((questionId) => questionId !== answer.questionId));
   };
 
+  const trackAnswerEvents = (answer: BriefAnswer) => {
+    trackEvent('question_answered', {
+      kind: answer.kind,
+      questionId: answer.questionId,
+      questionNumber: questionIndex + 1,
+    });
+
+    if (answer.kind === 'custom') {
+      trackEvent('custom_answer_used', {
+        questionId: answer.questionId,
+        questionNumber: questionIndex + 1,
+      });
+    }
+
+    if (answer.kind === 'unknown') {
+      trackEvent('unknown_used', {
+        questionId: answer.questionId,
+        questionNumber: questionIndex + 1,
+      });
+    }
+  };
+
   const goNext = () => {
     if (questionIndex >= questions.length - 1) {
       setStep('result');
@@ -86,6 +89,10 @@ export default function App() {
 
   const saveAnswer = (answer: BriefAnswer) => {
     upsertAnswer(answer);
+    trackAnswerEvents(answer);
+    if (questionIndex >= questions.length - 1) {
+      trackEvent('brief_completed', { answeredQuestions: answers.length + 1 });
+    }
     goNext();
   };
 
@@ -94,6 +101,13 @@ export default function App() {
     setSkippedQuestionIds((current) =>
       current.includes(currentQuestion.id) ? current : [...current, currentQuestion.id],
     );
+    trackEvent('skip_used', {
+      questionId: currentQuestion.id,
+      questionNumber: questionIndex + 1,
+    });
+    if (questionIndex >= questions.length - 1) {
+      trackEvent('brief_completed', { answeredQuestions: answers.length });
+    }
     goNext();
   };
 
@@ -107,6 +121,7 @@ export default function App() {
   };
 
   const restart = () => {
+    trackEvent('brief_restarted');
     setStep('start');
     setInitialDescription('');
     setQuestionIndex(0);
@@ -124,33 +139,26 @@ export default function App() {
 
     if (currentDraftAnswer) {
       upsertAnswer(currentDraftAnswer);
+      trackAnswerEvents(currentDraftAnswer);
     }
 
     setQuestionIndex(targetIndex);
   };
 
-  const createBriefFromSharedScreen = () => {
-    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
-    setSharedBrief(null);
-    restart();
+  const startBrief = () => {
+    trackEvent('brief_started', {
+      hasInitialDescription: initialDescription.trim().length > 0,
+      questionCount: questions.length,
+    });
+    setStep('questions');
   };
-
-  if (sharedBrief) {
-    return (
-      <SharedBriefScreen
-        briefText={sharedBrief.text}
-        hasError={sharedBrief.hasError}
-        onCreateBrief={createBriefFromSharedScreen}
-      />
-    );
-  }
 
   if (step === 'start') {
     return (
       <StartScreen
         value={initialDescription}
         onChange={setInitialDescription}
-        onStart={() => setStep('questions')}
+        onStart={startBrief}
       />
     );
   }

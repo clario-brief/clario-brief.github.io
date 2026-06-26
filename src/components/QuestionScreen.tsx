@@ -144,14 +144,8 @@ export function QuestionScreen({
       return;
     }
 
-    const showTimerId = window.setTimeout(() => {
-      setMascotNudgeStatus('visible');
-      onMascotNudgeShown();
-    }, 2000);
-
-    return () => {
-      window.clearTimeout(showTimerId);
-    };
+    setMascotNudgeStatus('visible');
+    onMascotNudgeShown();
   }, [onMascotNudgeShown, showMascotNudge]);
 
   const dismissMascotNudge = () => {
