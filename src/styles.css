@@ -305,6 +305,10 @@ button:disabled {
   line-height: 1.3;
 }
 
+.mobile-back-button {
+  display: none;
+}
+
 .question-shell {
   width: min(860px, 100%);
   margin: 34px auto 0;
@@ -526,6 +530,14 @@ button:disabled {
   gap: 12px;
 }
 
+.question-actions > div .skip-button {
+  order: 1;
+}
+
+.question-actions > div .primary-button {
+  order: 2;
+}
+
 .primary-button,
 .ghost-button,
 .skip-button {
@@ -693,7 +705,7 @@ button:disabled {
 
 @media (max-width: 720px) {
   .question-screen {
-    padding: 18px 14px;
+    padding: 18px 14px 108px;
   }
 
   .progress {
@@ -739,6 +751,33 @@ button:disabled {
     display: none;
   }
 
+  .mobile-back-button {
+    width: fit-content;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 6px;
+    padding: 0 6px;
+    color: var(--color-muted);
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .mobile-back-button:hover,
+  .mobile-back-button:focus-visible {
+    color: var(--color-ink);
+    background: rgba(255, 255, 255, 0.56);
+  }
+
+  .free-input,
+  .custom-input input {
+    scroll-margin-bottom: 96px;
+  }
+
   .result-screen {
     padding: 24px 16px;
   }
@@ -749,11 +788,48 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .question-actions {
+    position: fixed;
+    right: 14px;
+    bottom: 0;
+    left: 14px;
+    z-index: 20;
+    width: auto;
+    margin: 0;
+    padding: 10px 0 max(12px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(247, 247, 240, 0), var(--color-bg) 20%);
+  }
+
   .question-actions > div,
   .result-actions {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .question-actions > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .question-actions > .ghost-button {
+    display: none;
+  }
+
+  .question-actions > div .primary-button {
+    order: 1;
+  }
+
+  .question-actions > div .skip-button {
+    order: 2;
+  }
+
+  .question-actions .primary-button,
+  .question-actions .skip-button {
+    min-width: 0;
+    padding-right: 12px;
+    padding-left: 12px;
+    font-size: 14px;
   }
 
   .primary-button,
@@ -789,5 +865,11 @@ button:disabled {
 
   .option-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .question-shell--with-nudge {
+    padding-bottom: 0;
   }
 }

@@ -171,7 +171,7 @@ export function StartScreen({ value, onChange, onStart }: StartScreenProps) {
           <p className={styles.lead}>
             Ответьте на короткие вопросы — и Clario соберёт аккуратное ТЗ, которое можно скопировать и отправить исполнителю.
           </p>
-          <div className={styles.chips} aria-label="Что внутри Clario">
+          <div className={styles.startFacts} aria-label="Как работает Clario">
             <span>2–3 минуты</span>
             <span>Можно пропускать вопросы</span>
             <span>На выходе — ТЗ для исполнителя</span>

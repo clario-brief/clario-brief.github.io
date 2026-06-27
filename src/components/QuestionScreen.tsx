@@ -287,6 +287,11 @@ export function QuestionScreen({
         onNavigate={handleQuestionNavigate}
       />
 
+      <button className="mobile-back-button" type="button" onClick={handleBack}>
+        <Icon name="arrow-left" />
+        Назад
+      </button>
+
       <div className={`question-shell ${isMascotNudgeMounted ? 'question-shell--with-nudge' : ''}`}>
         <section className="question-layout">
         <div className="question-copy">
@@ -347,12 +352,12 @@ export function QuestionScreen({
           Назад
         </button>
         <div>
-          <button className="skip-button" type="button" onClick={handleSkip}>
-            Пропустить
-          </button>
           <button className="primary-button" type="button" onClick={handleSubmit} disabled={!canContinue}>
             Дальше
             <Icon name="arrow-right" />
+          </button>
+          <button className="skip-button" type="button" onClick={handleSkip}>
+            Пропустить
           </button>
         </div>
       </nav>

@@ -99,24 +99,31 @@
   line-height: 1.55;
 }
 
-.chips {
+.startFacts {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 18px;
   margin-top: 20px;
+  color: var(--color-muted);
+  cursor: default;
 }
 
-.chips span {
+.startFacts span {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 7px 11px;
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.62);
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
+  gap: 8px;
   font-size: 13px;
-  font-weight: 750;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.startFacts span::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--color-lime);
 }
 
 .stage {
@@ -428,22 +435,101 @@
 }
 
 @media (max-width: 520px) {
+  .screen {
+    padding: 16px 16px 20px;
+  }
+
   .header {
     align-items: flex-start;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .main {
+    gap: 18px;
+    padding-top: 18px;
+  }
+
+  .kicker {
+    display: none;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+    line-height: 1.02;
+  }
+
+  .heroHighlight::after {
+    bottom: -6px;
+    height: 4px;
+  }
+
+  .lead {
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.45;
   }
 
   .assistant {
-    grid-template-columns: 1fr;
+    display: none;
   }
 
-  .bubble {
-    border-radius: 20px;
+  .stage {
+    gap: 0;
+    padding: 12px;
+    border-radius: 22px;
   }
 
-  .chips span {
+  .stage::before {
+    inset: 8px;
+    border-radius: 18px;
+  }
+
+  .startFacts {
+    display: grid;
+    gap: 5px;
+    margin-top: 14px;
+  }
+
+  .startFacts span {
     width: 100%;
+    font-size: 12.5px;
+  }
+
+  .composer {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .label {
+    margin-bottom: 8px;
+  }
+
+  .textarea {
+    min-height: 96px;
+    max-height: 120px;
+    padding: 13px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+
+  .hint {
+    margin: 8px 0 12px;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .button,
+  .secondaryButton {
+    min-height: 48px;
+    height: auto;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
   }
 
   .modalOverlay {
